@@ -5,6 +5,8 @@ import { MovieService } from '../../shared/services/movie.service';
 import { MovieCarouselComponent } from '../../shared/components/movie-carousel/movie-carousel.component';
 import { CommonModule } from '@angular/common';
 import { IVideoContent } from '../../shared/models/videoContent.interface';
+import { forkJoin } from 'rxjs';
+import { map } from 'rxjs/operators'
 
 @Component({
   selector: 'app-browse',
@@ -16,13 +18,40 @@ import { IVideoContent } from '../../shared/models/videoContent.interface';
 export class BrowseComponent implements OnInit {
   movieService=inject(MovieService);
   
-  popularMovies:IVideoContent[]=[];
+  movies: IVideoContent[] = [];
+  tvShows: IVideoContent[] = [];
+  ratedMovies: IVideoContent[] = [];
+  nowPlayingMovies: IVideoContent[] = [];
+  popularMovies: IVideoContent[] = [];
+  topRatedMovies: IVideoContent[] = [];
+  upcomingMovies: IVideoContent[] = [];
+  
+  sources = [
+    this.movieService.getMovies(),
+    this.movieService.getTvShows(),
+    this.movieService.getRatedMovies(),
+    this.movieService.getNowPlayingMovies(),
+    this.movieService.getUpcomingMovies(),
+    this.movieService.getPopularMovies(),
+    this.movieService.getTopRated()
+  ];
+
 
   ngOnInit(): void {
-    this.movieService.getMovies()
-    .subscribe(res=>
-    {
-      this.popularMovies = res.results;
+    forkJoin(this.sources)
+    .pipe(
+      map(([movies, tvShows, ratedMovies, nowPlaying, upcoming, popular, topRated])=>{
+        return {movies, tvShows, ratedMovies, nowPlaying, upcoming, popular, topRated}
+      })
+    ).subscribe((res:any)=>{
+      this.movies = res.movies.results as IVideoContent[];
+      this.tvShows = res.tvShows.results as IVideoContent[];
+      this.ratedMovies = res.ratedMovies.results as IVideoContent[];
+      this.nowPlayingMovies = res.nowPlaying.results as IVideoContent[];
+      this.upcomingMovies = res.upcoming.results as IVideoContent[];
+      this.popularMovies = res.popular.results as IVideoContent[];
+      this.topRatedMovies = res.topRated.results as IVideoContent[];
+      
     })
   }
 }
