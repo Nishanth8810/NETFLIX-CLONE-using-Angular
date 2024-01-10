@@ -5,7 +5,7 @@ import { MovieService } from '../../shared/services/movie.service';
 import { MovieCarouselComponent } from '../../shared/components/movie-carousel/movie-carousel.component';
 import { CommonModule } from '@angular/common';
 import { IVideoContent } from '../../shared/models/videoContent.interface';
-import { forkJoin } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators'
 
 @Component({
@@ -17,6 +17,9 @@ import { map } from 'rxjs/operators'
 })
 export class BrowseComponent implements OnInit {
   movieService=inject(MovieService);
+
+  bannerDetail$=new Observable<any>();
+  bannerVideo$ = new Observable<any>();
   
   movies: IVideoContent[] = [];
   tvShows: IVideoContent[] = [];
@@ -34,6 +37,7 @@ export class BrowseComponent implements OnInit {
     this.movieService.getUpcomingMovies(),
     this.movieService.getPopularMovies(),
     this.movieService.getTopRated()
+  
   ];
 
 
@@ -41,6 +45,8 @@ export class BrowseComponent implements OnInit {
     forkJoin(this.sources)
     .pipe(
       map(([movies, tvShows, ratedMovies, nowPlaying, upcoming, popular, topRated])=>{
+      this.bannerDetail$=  this.movieService.getBannerDetail(movies.results[0].id);
+      this.bannerVideo$=  this.movieService.getBannerVideo(movies.results[0].id);
         return {movies, tvShows, ratedMovies, nowPlaying, upcoming, popular, topRated}
       })
     ).subscribe((res:any)=>{
