@@ -4,6 +4,7 @@ import { BannerComponent } from '../../core/component/banner/banner.component';
 import { MovieService } from '../../shared/services/movie.service';
 import { MovieCarouselComponent } from '../../shared/components/movie-carousel/movie-carousel.component';
 import { CommonModule } from '@angular/common';
+import { IVideoContent } from '../../shared/models/videoContent.interface';
 
 @Component({
   selector: 'app-browse',
@@ -14,14 +15,14 @@ import { CommonModule } from '@angular/common';
 })
 export class BrowseComponent implements OnInit {
   movieService=inject(MovieService);
-
+  
+  popularMovies:IVideoContent[]=[];
 
   ngOnInit(): void {
     this.movieService.getMovies()
     .subscribe(res=>
     {
-     
-      
+      this.popularMovies = res.results;
     })
   }
 }
